@@ -1,20 +1,40 @@
 {
   "manifest_version": 3,
-  "name": "Units Hackathon Extension",
+  "name": "Units Scannerrrrr",
   "version": "1.0.0",
   "description": "Web Extension Project",
   "action": {
     "default_popup": "src/popup.html"
   },
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "run_at": "document_start"
     }
   ],
-  "permissions": []
+  "permissions": ["tabs", "activeTab", "storage", "scripting", "management"],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "https://*.infura.io/*",
+    "https://*.etherscan.io/*",
+    "https://*.unit0.dev/*"
+  ],
+  "externally_connectable": {
+    "ids": ["nkbihfbeogaeaoehlefnkodbefgpgknn"],
+    "matches": ["*://*.metamask.io/*", "https://*.infura.io/*"]
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["inject.js", "content.js", "background.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
