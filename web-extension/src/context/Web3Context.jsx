@@ -75,7 +75,7 @@ export const Web3Provider = ({ children }) => {
               );
               try {
                 await chrome.runtime.sendMessage(
-                  "nkbihfbeogaeaoehlefnkodbefgpgknn",
+                  "djclckkglechooblngghdinmeemkbgci",
                   {
                     type: "metamask_getProviderState",
                   }
