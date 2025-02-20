@@ -3,11 +3,15 @@ import Layout from "../components/Layout";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
 import Admin from "../pages/Admin";
+import Scan from "../components/Scan";
+import Report from "../components/Report";
 
 function Router() {
   const routes = [
     { path: "/", element: Home },
     { path: "/admin", element: Admin },
+    { path: "/scan", element: Scan },
+    { path: "/report", element: Report },
   ];
 
   return (
