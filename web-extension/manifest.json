@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Units Hackathon Web Extension",
+  "version": "1.0.0",
+  "description": "Web Extension for Units Hackathon",
+  "permissions": ["storage", "activeTab"],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "background": {
+    "service_worker": "src/background/background.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/content.ts"]
+    }
+  ]
+}
