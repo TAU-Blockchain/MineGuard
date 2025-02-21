@@ -10,7 +10,7 @@ import ResultView from "../components/ResultView";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const Popup = () => {
-  const { connectWallet, contract } = useWeb3();
+  const { contract } = useWeb3();
   const [activeTab, setActiveTab] = useState("scan");
   const [activeMode, setActiveMode] = useState("scan");
   const [isLoading, setIsLoading] = useState(false);
@@ -66,55 +66,27 @@ const Popup = () => {
 
   const handleReportSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      const connected = await connectWallet();
-      if (!connected) {
-        throw new Error("Failed to connect wallet. Please try again.");
-      }
 
-      if (!contract) {
-        throw new Error(
-          "Contract is not initialized yet. Please try again in a moment."
-        );
-      }
-
-      if (!searchQuery || !searchQuery.trim()) {
-        throw new Error("Please enter a valid contract address");
-      }
-
-      if (!ethers.utils.isAddress(searchQuery)) {
-        throw new Error("Invalid Ethereum address format");
-      }
-
-      console.log("Contract instance:", contract);
-      console.log("Reporting address:", searchQuery);
-
-      const tx = await contract.report(
-        searchQuery,
-        ["Phishing", "Rug Pull", "Scam"],
-        "This is a test report"
-      );
-
-      console.log("Transaction sent:", tx.hash);
-
-      const receipt = await tx.wait();
-      console.log("Transaction confirmed:", receipt);
-
-      setReportResult({
-        success: true,
-        message: "Report submitted successfully!",
-        txHash: tx.hash,
-      });
-    } catch (error) {
-      console.error("Report generation error:", error);
+    if (!searchQuery || !searchQuery.trim()) {
       setReportResult({
         error: true,
-        message: error.message || "Failed to submit report. Please try again.",
+        message: "Please enter a valid contract address",
       });
-    } finally {
-      setIsLoading(false);
+      return;
     }
+
+    if (!ethers.utils.isAddress(searchQuery)) {
+      setReportResult({
+        error: true,
+        message: "Invalid Ethereum address format",
+      });
+      return;
+    }
+
+    window.open(
+      `http://localhost:5173/#/report?address=${searchQuery}`,
+      "_blank"
+    );
   };
 
   const calculateThreatDistribution = (reports) => {
