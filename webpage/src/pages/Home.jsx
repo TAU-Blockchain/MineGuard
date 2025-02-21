@@ -5,7 +5,7 @@ function Home() {
     <div className="min-h-screen">
       <section className="bg-[#9BC1BC] shadow-lg shadow-[#9BC1BC] text-white py-20 my-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
+          <div className="max-w-3xl mx-auto text-center flex flex-col gap-4 justify-center items-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 font-pixelify">
               MineGuard: Smart Contract Security Platform
             </h1>
@@ -14,12 +14,20 @@ function Home() {
               together. Scan smart contracts, report threats, and discuss
               security with the community.
             </p>
-            <Link
-              to="scan"
-              className="bg-[#ED6A5A] hover:bg-white text-white hover:text-[#ED6A5A] px-8 py-3 rounded-full font-semibold transition duration-300 focus:outline-none focus:ring-2 focus:ring-white"
-            >
-              Start Scanning Now
-            </Link>
+            <div className="flex gap-4">
+              <Link
+                to="scan"
+                className="bg-[#ED6A5A] hover:bg-white text-white hover:text-[#ED6A5A] px-8 py-3 rounded-full font-semibold transition duration-300 focus:outline-none focus:ring-2 focus:ring-white"
+              >
+                Start Scanning Now
+              </Link>
+              <Link
+                to="education"
+                className="bg-[#ED6A5A] hover:bg-white text-white hover:text-[#ED6A5A] px-8 py-3 rounded-full font-semibold transition duration-300 focus:outline-none focus:ring-2 focus:ring-white"
+              >
+                Learn More
+              </Link>
+            </div>
           </div>
         </div>
       </section>

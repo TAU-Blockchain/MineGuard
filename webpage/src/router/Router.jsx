@@ -5,6 +5,7 @@ import NotFound from "../pages/NotFound";
 import Admin from "../pages/Admin";
 import Scan from "../pages/Scan";
 import Report from "../pages/Report";
+import Education from "../pages/Education";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 function Router() {
@@ -14,6 +15,7 @@ function Router() {
         <Route path="/" element={<Home />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/scan" element={<Scan />} />
+        <Route path="/education" element={<Education />} />
         <Route
           path="/report"
           element={
