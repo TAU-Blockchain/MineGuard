@@ -99,14 +99,14 @@ const Discussion = ({ contractAddress }) => {
 
   return (
     <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-2xl font-bold mb-6 text-[#ED6A5A]">Tartışmalar</h3>
+      <h3 className="text-2xl font-bold mb-6 text-[#ED6A5A]">Discussions</h3>
 
-      {/* Yeni Tartışma Formu */}
+      {/* New Discussion Form */}
       <form onSubmit={handleCreateDiscussion} className="mb-8">
         <textarea
           value={newDiscussion}
           onChange={(e) => setNewDiscussion(e.target.value)}
-          placeholder="Yeni bir tartışma başlat..."
+          placeholder="Start a new discussion..."
           className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#ED6A5A] focus:border-transparent"
           rows="3"
         />
@@ -115,18 +115,18 @@ const Discussion = ({ contractAddress }) => {
           disabled={!account || loading}
           className="mt-2 px-6 py-2 bg-[#ED6A5A] text-white rounded-lg hover:bg-[#e85a49] transition duration-300"
         >
-          {loading ? "Gönderiliyor..." : "Tartışma Başlat"}
+          {loading ? "Sending..." : "Start Discussion"}
         </button>
       </form>
 
-      {/* Tartışma Listesi */}
+      {/* Discussion List */}
       <div className="space-y-6">
         {discussions.map((discussion) => (
           <div key={discussion._id} className="border rounded-lg p-4">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-gray-600 text-sm">
-                  {formatAddress(discussion.author)} tarafından{" "}
+                  by {formatAddress(discussion.author)} on{" "}
                   {formatDate(discussion.createdAt)}
                 </p>
                 <p className="mt-2">{discussion.content}</p>
@@ -161,13 +161,13 @@ const Discussion = ({ contractAddress }) => {
               </div>
             </div>
 
-            {/* Yanıtlar */}
+            {/* Replies */}
             {discussion.replies?.length > 0 && (
               <div className="ml-8 mt-4 space-y-4">
                 {discussion.replies.map((reply) => (
                   <div key={reply._id} className="border-l-2 pl-4">
                     <p className="text-gray-600 text-sm">
-                      {formatAddress(reply.author)} tarafından{" "}
+                      by {formatAddress(reply.author)} on{" "}
                       {formatDate(reply.createdAt)}
                     </p>
                     <p className="mt-1">{reply.content}</p>
@@ -176,13 +176,13 @@ const Discussion = ({ contractAddress }) => {
               </div>
             )}
 
-            {/* Yanıt Formu */}
+            {/* Reply Form */}
             {activeDiscussion === discussion._id ? (
               <div className="mt-4 ml-8">
                 <textarea
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
-                  placeholder="Yanıtınızı yazın..."
+                  placeholder="Write your reply..."
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-[#ED6A5A] focus:border-transparent"
                   rows="2"
                 />
@@ -192,7 +192,7 @@ const Discussion = ({ contractAddress }) => {
                     disabled={!account || loading}
                     className="px-4 py-1 bg-[#ED6A5A] text-white rounded-lg hover:bg-[#e85a49] transition duration-300"
                   >
-                    Yanıtla
+                    Reply
                   </button>
                   <button
                     onClick={() => {
@@ -201,7 +201,7 @@ const Discussion = ({ contractAddress }) => {
                     }}
                     className="px-4 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300"
                   >
-                    İptal
+                    Cancel
                   </button>
                 </div>
               </div>
@@ -211,14 +211,14 @@ const Discussion = ({ contractAddress }) => {
                 className="mt-4 flex items-center text-[#ED6A5A] hover:text-[#e85a49]"
               >
                 <FaReply className="mr-1" />
-                Yanıtla
+                Reply
               </button>
             )}
           </div>
         ))}
       </div>
 
-      {/* Sayfalama */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-6 flex justify-center space-x-2">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (

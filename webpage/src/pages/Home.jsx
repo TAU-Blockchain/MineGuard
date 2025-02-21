@@ -1,5 +1,5 @@
 import { FaRocket, FaLightbulb, FaUsers } from "react-icons/fa";
-
+import { Link } from "react-router-dom";
 function Home() {
   return (
     <div className="min-h-screen">
@@ -7,14 +7,19 @@ function Home() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 font-pixelify">
-              Lorem Ipsum Dolor
+              MineGuard: Smart Contract Security Platform
             </h1>
             <p className="text-xl mb-8">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut illo
+              Let&apos;s build a secure future in the blockchain ecosystem
+              together. Scan smart contracts, report threats, and discuss
+              security with the community.
             </p>
-            <button className="bg-[#ED6A5A] hover:bg-white text-white hover:text-[#ED6A5A]  px-8 py-3 rounded-full font-semibold  transition duration-300 focus:outline-none focus:ring-2 focus:ring-white">
-              Lorem Ipsum
-            </button>
+            <Link
+              to="scan"
+              className="bg-[#ED6A5A] hover:bg-white text-white hover:text-[#ED6A5A] px-8 py-3 rounded-full font-semibold transition duration-300 focus:outline-none focus:ring-2 focus:ring-white"
+            >
+              Start Scanning Now
+            </Link>
           </div>
         </div>
       </section>
@@ -27,9 +32,12 @@ function Home() {
                 <FaRocket />
               </div>
               <h3 className="text-xl text-[#ED6A5A] font-semibold mb-4 pixelify">
-                Lorem Ipsum
+                Quick Scan
               </h3>
-              <p className="text-[#ed6b5aa1]">Lorem Ipsum</p>
+              <p className="text-[#ed6b5aa1]">
+                Scan smart contracts in seconds and detect potential security
+                threats. Make quick decisions with instant results.
+              </p>
             </div>
 
             <div className="bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A] text-center">
@@ -37,9 +45,12 @@ function Home() {
                 <FaLightbulb />
               </div>
               <h3 className="text-xl text-[#ED6A5A] font-semibold mb-4">
-                Lorem Ipsum
+                Community Intelligence
               </h3>
-              <p className="text-[#ed6b5aa1]">Lorem Ipsum</p>
+              <p className="text-[#ed6b5aa1]">
+                Report suspicious contracts and benefit from other users&apos;
+                experiences. Discuss security threats with the community.
+              </p>
             </div>
 
             <div className="text-[#ED6A5A] p-8 rounded-lg shadow-lg shadow-[#ED6A5A] text-center">
@@ -47,9 +58,12 @@ function Home() {
                 <FaUsers />
               </div>
               <h3 className="text-xl text[#ED6A5A] font-semibold mb-4">
-                Lorem Ipsum
+                Secure Ecosystem
               </h3>
-              <p className="text-[#ed6b5aa1]">Lorem Ipsum</p>
+              <p className="text-[#ed6b5aa1]">
+                Harness the power of community to make the blockchain ecosystem
+                more secure. Every contribution matters.
+              </p>
             </div>
           </div>
         </div>
@@ -59,19 +73,19 @@ function Home() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 font-pixelify">
-              Lets Build Together!
+              Let&apos;s Build a Secure Future Together!
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Contact us for any questions or concerns.
+              Have questions about blockchain security? Get in touch with us.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <input
                 type="email"
-                placeholder="Your Email"
-                className="px-6 py-3 rounded-full border focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Your email address"
+                className="px-6 py-3 rounded-full border focus:outline-none focus:ring-2 focus:ring-[#ED6A5A]"
               />
-              <button className="bg-[#d0c852] text-white px-8 py-3 rounded-full font-semibold hover:bg-primary-dark transition duration-300">
-                Send
+              <button className="bg-[#ED6A5A] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#e85a49] transition duration-300">
+                Get in Touch
               </button>
             </div>
           </div>

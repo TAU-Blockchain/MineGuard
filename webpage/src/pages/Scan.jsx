@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BiSearch, BiChevronDown } from "react-icons/bi";
-import { HiCode, HiShieldExclamation } from "react-icons/hi";
+import { HiCode, HiShieldExclamation, HiShieldCheck } from "react-icons/hi";
 import { MdVerified, MdWarning } from "react-icons/md";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
@@ -155,8 +155,7 @@ function Scan() {
               Security Scanner
             </h1>
             <p className="text-xl mb-8">
-              Enter a contract or wallet address to scan for potential security
-              risks
+              Enter a contract address to scan for potential security risks
             </p>
             <form onSubmit={handleScanSubmit} className="w-full relative">
               <div className="relative flex items-center max-w-2xl mx-auto">
@@ -164,7 +163,7 @@ function Scan() {
                   type="text"
                   value={searchQuery}
                   onChange={handleSearchQueryChange}
-                  placeholder="Enter contract address to scan..."
+                  placeholder="Enter contract address..."
                   className="w-full pl-6 pr-12 py-4 rounded-full bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ED6A5A]"
                 />
                 <button
@@ -248,12 +247,19 @@ function Scan() {
                               />
                             )}
 
-                            {contractInfo.isVerified && contractInfo.isScam && (
+                            {contractInfo.isScam ? (
                               <Badge
                                 icon={MdWarning}
                                 text="Scam"
                                 color="bg-red-100 text-red-700"
                                 tooltipText="This contract has been flagged as potentially fraudulent"
+                              />
+                            ) : (
+                              <Badge
+                                icon={HiShieldCheck}
+                                text="Safe"
+                                color="bg-green-100 text-green-700"
+                                tooltipText="This contract has been marked as safe"
                               />
                             )}
 
@@ -303,14 +309,14 @@ function Scan() {
                         <div className="text-sm text-[#ed6b5aa1]">
                           Last Scan:{" "}
                           {new Date(reportResult.timestamp).toLocaleString(
-                            "tr-TR",
+                            "en-US",
                             {
                               year: "numeric",
                               month: "long",
                               day: "numeric",
                               hour: "2-digit",
                               minute: "2-digit",
-                              hour12: false,
+                              hour12: true,
                             }
                           )}
                         </div>
@@ -325,89 +331,6 @@ function Scan() {
                               <h3 className="text-xl text-[#ED6A5A] font-semibold">
                                 Scanned Address
                               </h3>
-                              {contractInfo && (
-                                <div className="flex flex-wrap gap-2">
-                                  {contractInfo.isContract ? (
-                                    <Badge
-                                      icon={HiCode}
-                                      text="Contract"
-                                      color="bg-yellow-100 text-yellow-700"
-                                      tooltipText="This address contains a smart contract"
-                                    />
-                                  ) : (
-                                    <Badge
-                                      icon={HiCode}
-                                      text="Not a Contract"
-                                      color="bg-gray-100 text-gray-700"
-                                      tooltipText="This is a wallet address, not a smart contract"
-                                    />
-                                  )}
-
-                                  {contractInfo.isVerified ? (
-                                    <Badge
-                                      icon={MdVerified}
-                                      text="Verified"
-                                      color="bg-green-100 text-green-700"
-                                      tooltipText="This contract's source code is verified and trusted"
-                                    />
-                                  ) : (
-                                    <Badge
-                                      icon={HiShieldExclamation}
-                                      text="Unverified"
-                                      color="bg-red-100 text-red-700"
-                                      tooltipText="This contract's source code is not verified, be cautious"
-                                    />
-                                  )}
-                                  {contractInfo.isVerified &&
-                                    contractInfo.isScam && (
-                                      <Badge
-                                        icon={MdWarning}
-                                        text="Scam"
-                                        color="bg-red-100 text-red-700"
-                                        tooltipText="This contract has been flagged as potentially fraudulent"
-                                      />
-                                    )}
-
-                                  {contractInfo.contractDetails && (
-                                    <>
-                                      {contractInfo.contractDetails.status
-                                        .isSelfDestructed && (
-                                        <Badge
-                                          icon={MdWarning}
-                                          text="Self Destructed"
-                                          color="bg-red-100 text-red-700"
-                                          tooltipText="This contract has self-destructed and is no longer usable"
-                                        />
-                                      )}
-                                      {contractInfo.contractDetails.status
-                                        .isProxy && (
-                                        <Badge
-                                          icon={HiCode}
-                                          text="Proxy"
-                                          color="bg-blue-100 text-blue-700"
-                                          tooltipText="This is a proxy contract, it may point to another contract"
-                                        />
-                                      )}
-                                      {contractInfo.contractDetails.contractType
-                                        .canWrite ? (
-                                        <Badge
-                                          icon={HiCode}
-                                          text="Writable"
-                                          color="bg-yellow-100 text-yellow-700"
-                                          tooltipText="This contract has write permissions, use with caution"
-                                        />
-                                      ) : (
-                                        <Badge
-                                          icon={HiCode}
-                                          text="Read Only"
-                                          color="bg-green-100 text-green-700"
-                                          tooltipText="This contract has read-only permissions, more secure"
-                                        />
-                                      )}
-                                    </>
-                                  )}
-                                </div>
-                              )}
                             </div>
                             <div className="font-mono text-sm break-all text-gray-600 mb-4">
                               {reportResult.address}
@@ -420,13 +343,13 @@ function Scan() {
                                 Last Scan:{" "}
                                 {new Date(
                                   reportResult.timestamp
-                                ).toLocaleString("tr-TR", {
+                                ).toLocaleString("en-US", {
                                   year: "numeric",
                                   month: "long",
                                   day: "numeric",
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                  hour12: false,
+                                  hour12: true,
                                 })}
                               </div>
                             </div>
