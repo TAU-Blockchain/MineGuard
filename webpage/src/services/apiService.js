@@ -1,6 +1,98 @@
 const UNITS_API = "https://explorer-testnet.unit0.dev/api/v2";
-
+const API_URL = "http://localhost:3000/api";
 export const apiService = {
+  async logScan(address, scannerAddress, verificationData, contractDetails) {
+    const scanData = {
+      contractAddress: address,
+      scannedBy: scannerAddress,
+      isContract: verificationData?.isContract || false,
+      isVerified: verificationData?.isVerified || false,
+      isScam: verificationData?.isScam || false,
+      contractDetails: {
+        status: {
+          isSelfDestructed: contractDetails?.status?.isSelfDestructed || false,
+          isProxy: contractDetails?.status?.isProxy || false,
+        },
+        contractType: {
+          canWrite: contractDetails?.contractType?.canWrite || false,
+        },
+      },
+    };
+    const response = await fetch(`${API_URL}/scans`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(scanData),
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to log scan");
+    }
+
+    return response.json();
+  },
+
+  async getLatestScan(contractAddress) {
+    try {
+      const response = await fetch(
+        `${API_URL}/scans/${contractAddress}/latest`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error("Failed to fetch latest scan");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error fetching latest scan:", error);
+      throw error;
+    }
+  },
+
+  async getScanHistory(contractAddress, page = 1, limit = 10) {
+    try {
+      const response = await fetch(
+        `${API_URL}/scans/${contractAddress}/history?page=${page}&limit=${limit}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch scan history");
+      }
+
+      const data = await response.json();
+      return data.success
+        ? {
+            scans: data.data,
+            currentPage: data.currentPage,
+            totalPages: data.totalPages,
+            totalScans: data.totalScans,
+          }
+        : null;
+    } catch (error) {
+      console.error("Error fetching scan history:", error);
+      throw error;
+    }
+  },
+
+  // UNITS REST API
   async getContractVerificationStatus(address) {
     try {
       const response = await fetch(`${UNITS_API}/addresses/${address}`);

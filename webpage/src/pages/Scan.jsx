@@ -7,12 +7,12 @@ import { ethers } from "ethers";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
 import { apiService } from "../services/apiService";
-import Badge from "./Badge";
+import Badge from "../components/Badge";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Scan() {
-  const { getReports } = useWeb3();
+  const { getReports, account } = useWeb3();
   const [isLoading, setIsLoading] = useState(false);
   const [reportResult, setReportResult] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,6 +96,12 @@ function Scan() {
         reports: reports,
         timestamp: new Date().toISOString(),
       };
+      await apiService.logScan(
+        searchQuery,
+        account,
+        verificationStatus.isVerified,
+        contractDetails
+      );
 
       setReportResult(formattedResult);
       setSearchQuery("");

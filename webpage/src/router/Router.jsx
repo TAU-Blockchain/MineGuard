@@ -3,8 +3,8 @@ import Layout from "../components/Layout";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
 import Admin from "../pages/Admin";
-import Scan from "../components/Scan";
-import Report from "../components/Report";
+import Scan from "../pages/Scan";
+import Report from "../pages/Report";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 function Router() {
