@@ -9,7 +9,6 @@ import {
   FaShieldAlt,
   FaExclamationTriangle,
   FaCheckCircle,
-  FaBookReader,
 } from "react-icons/fa";
 import { MdCastForEducation } from "react-icons/md";
 function Education() {
