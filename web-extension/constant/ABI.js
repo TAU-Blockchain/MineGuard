@@ -2,6 +2,36 @@ const ABI = [
   {
     inputs: [
       {
+        internalType: "address[]",
+        name: "_owners",
+        type: "address[]",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "reportedAddress",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "reporter",
+        type: "address",
+      },
+    ],
+    name: "ReportSubmitted",
+    type: "event",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_newOwner",
         type: "address",
@@ -29,53 +59,6 @@ const ABI = [
     inputs: [
       {
         internalType: "address",
-        name: "_owner",
-        type: "address",
-      },
-    ],
-    name: "removeOwner",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_address",
-        type: "address",
-      },
-      {
-        internalType: "string[]",
-        name: "_threats",
-        type: "string[]",
-      },
-      {
-        internalType: "string",
-        name: "_description",
-        type: "string",
-      },
-    ],
-    name: "report",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address[]",
-        name: "_owners",
-        type: "address[]",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "constructor",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
         name: "_address",
         type: "address",
       },
@@ -88,11 +71,6 @@ const ABI = [
             internalType: "string[]",
             name: "threats",
             type: "string[]",
-          },
-          {
-            internalType: "string",
-            name: "description",
-            type: "string",
           },
           {
             internalType: "address",
@@ -124,6 +102,37 @@ const ABI = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_owner",
+        type: "address",
+      },
+    ],
+    name: "removeOwner",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_address",
+        type: "address",
+      },
+      {
+        internalType: "string[]",
+        name: "_threats",
+        type: "string[]",
+      },
+    ],
+    name: "report",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
 ];

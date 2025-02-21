@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Units Scannerrrrr",
+  "name": "MineGuard",
   "version": "1.0.0",
   "description": "Web Extension Project",
   "action": {
@@ -22,7 +22,8 @@
     "http://127.0.0.1/*",
     "https://*.infura.io/*",
     "https://*.etherscan.io/*",
-    "https://*.unit0.dev/*"
+    "https://*.unit0.dev/*",
+    "*://*.metamask.io/*"
   ],
   "externally_connectable": {
     "ids": ["nkbihfbeogaeaoehlefnkodbefgpgknn"],

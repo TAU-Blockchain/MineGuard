@@ -51,7 +51,6 @@ export const Web3Provider = ({ children }) => {
   }, []);
 
   const connectWallet = useCallback(async () => {
-    //TODO: We cant use this function because we are cant reach the ethereum provider from the meta mask extension from using another extension(its about the window.ethereum element)
     try {
       const ethereum = await new Promise((resolve) => {
         if (typeof window.ethereum !== "undefined") {
@@ -74,12 +73,10 @@ export const Web3Provider = ({ children }) => {
                 "Tab message başarısız, chrome extension API deneniyor"
               );
               try {
-                await chrome.runtime.sendMessage(
-                  "djclckkglechooblngghdinmeemkbgci",
-                  {
-                    type: "metamask_getProviderState",
-                  }
+                const tr = await chrome.runtime.sendMessage(
+                  "djclckkglechooblngghdinmeemkbgci"
                 );
+                console.log("tr1", tr);
                 resolve(window.ethereum);
               } catch (err) {
                 console.error("MetaMask bağlantısı başarısız:", err);
@@ -97,7 +94,6 @@ export const Web3Provider = ({ children }) => {
       }
 
       const provider = new ethers.providers.Web3Provider(ethereum);
-
       const accounts = await provider.send("eth_requestAccounts", []);
       const signer = provider.getSigner();
       const network = await provider.getNetwork();
