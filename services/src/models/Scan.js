@@ -35,7 +35,7 @@ const scanSchema = new mongoose.Schema({
   },
   scannedBy: {
     type: String,
-    required: true,
+    required: false,
   },
 });
 
