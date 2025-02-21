@@ -3,6 +3,7 @@ import { useWeb3 } from "../context/Web3Context";
 import { apiService } from "../services/apiService";
 import { BiUpvote, BiDownvote } from "react-icons/bi";
 import { FaReply } from "react-icons/fa";
+import PropTypes from "prop-types";
 
 const Discussion = ({ contractAddress }) => {
   const { account } = useWeb3();
@@ -13,9 +14,11 @@ const Discussion = ({ contractAddress }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [replyContent, setReplyContent] = useState("");
   const [activeDiscussion, setActiveDiscussion] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (contractAddress) {
+      console.log("Loading discussions for contract:", contractAddress);
       loadDiscussions();
     }
   }, [contractAddress, currentPage]);
@@ -23,16 +26,20 @@ const Discussion = ({ contractAddress }) => {
   const loadDiscussions = async () => {
     try {
       setLoading(true);
+      setError(null);
+      console.log("Fetching discussions...");
       const result = await apiService.getDiscussions(
         contractAddress,
         currentPage
       );
+      console.log("Discussions result:", result);
       if (result) {
         setDiscussions(result.discussions);
         setTotalPages(result.totalPages);
       }
     } catch (error) {
       console.error("Error loading discussions:", error);
+      setError("Failed to load discussions. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -44,16 +51,19 @@ const Discussion = ({ contractAddress }) => {
 
     try {
       setLoading(true);
+      setError(null);
+      console.log("Creating discussion...");
       await apiService.createDiscussion({
         contractAddress,
-        title: "Contract Discussion",
         content: newDiscussion,
         author: account,
       });
+      console.log("Discussion created successfully");
       setNewDiscussion("");
       loadDiscussions();
     } catch (error) {
       console.error("Error creating discussion:", error);
+      setError("Failed to create discussion. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -97,9 +107,23 @@ const Discussion = ({ contractAddress }) => {
     return new Date(date).toLocaleDateString();
   };
 
+  if (loading && discussions.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ED6A5A]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
       <h3 className="text-2xl font-bold mb-6 text-[#ED6A5A]">Discussions</h3>
+
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
 
       {/* New Discussion Form */}
       <form onSubmit={handleCreateDiscussion} className="mb-8">
@@ -113,7 +137,7 @@ const Discussion = ({ contractAddress }) => {
         <button
           type="submit"
           disabled={!account || loading}
-          className="mt-2 px-6 py-2 bg-[#ED6A5A] text-white rounded-lg hover:bg-[#e85a49] transition duration-300"
+          className="mt-2 px-6 py-2 bg-[#ED6A5A] text-white rounded-lg hover:bg-[#e85a49] transition duration-300 disabled:opacity-50"
         >
           {loading ? "Sending..." : "Start Discussion"}
         </button>
@@ -238,6 +262,10 @@ const Discussion = ({ contractAddress }) => {
       )}
     </div>
   );
+};
+
+Discussion.propTypes = {
+  contractAddress: PropTypes.string.isRequired,
 };
 
 export default Discussion;

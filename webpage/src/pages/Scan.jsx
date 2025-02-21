@@ -536,7 +536,15 @@ function Scan() {
           )}
 
           {reportResult && !reportResult.error && (
-            <Discussion contractAddress={reportResult.address} />
+            <div className="mt-12">
+              <h2 className="text-3xl font-bold mb-8 font-pixelify text-center text-[#ED6A5A]">
+                Community Discussion
+              </h2>
+              <Discussion
+                contractAddress={reportResult.address}
+                key={reportResult.address}
+              />
+            </div>
           )}
         </div>
       </section>

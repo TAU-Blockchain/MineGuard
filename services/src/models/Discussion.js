@@ -35,12 +35,6 @@ const discussionSchema = new mongoose.Schema({
     required: [true, "Contract address is required"],
     trim: true,
   },
-  title: {
-    type: String,
-    required: [true, "Title is required"],
-    trim: true,
-    maxlength: [200, "Title cannot be more than 200 characters"],
-  },
   content: {
     type: String,
     required: [true, "Content is required"],
@@ -87,6 +81,10 @@ const discussionSchema = new mongoose.Schema({
 discussionSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
+});
+
+discussionSchema.virtual("title").get(function () {
+  return this.content.slice(0, 100) + (this.content.length > 100 ? "..." : "");
 });
 
 discussionSchema.virtual("voteCount").get(function () {
