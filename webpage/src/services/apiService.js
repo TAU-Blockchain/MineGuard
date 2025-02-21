@@ -1,6 +1,8 @@
 const UNITS_API = "https://explorer-testnet.unit0.dev/api/v2";
-const API_URL = "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
 export const apiService = {
+  // Scan endpoints
   async logScan(address, scannerAddress, verificationData, contractDetails) {
     const scanData = {
       contractAddress: address,
@@ -88,6 +90,120 @@ export const apiService = {
         : null;
     } catch (error) {
       console.error("Error fetching scan history:", error);
+      throw error;
+    }
+  },
+
+  // Report endpoints
+  async logReport(contractAddress, reporterAddress, threats) {
+    try {
+      const response = await fetch(`${API_URL}/reports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contractAddress,
+          reporter: reporterAddress,
+          threats,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit report");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      throw error;
+    }
+  },
+
+  async getContractReports(contractAddress, page = 1, limit = 10) {
+    try {
+      const response = await fetch(
+        `${API_URL}/reports/contract/${contractAddress}?page=${page}&limit=${limit}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch contract reports");
+      }
+
+      const data = await response.json();
+      return data.success
+        ? {
+            reports: data.data,
+            currentPage: data.currentPage,
+            totalPages: data.totalPages,
+            totalReports: data.totalReports,
+          }
+        : null;
+    } catch (error) {
+      console.error("Error fetching contract reports:", error);
+      throw error;
+    }
+  },
+
+  async getReporterHistory(reporterAddress, page = 1, limit = 10) {
+    try {
+      const response = await fetch(
+        `${API_URL}/reports/reporter/${reporterAddress}?page=${page}&limit=${limit}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch reporter history");
+      }
+
+      const data = await response.json();
+      return data.success
+        ? {
+            reports: data.data,
+            currentPage: data.currentPage,
+            totalPages: data.totalPages,
+            totalReports: data.totalReports,
+          }
+        : null;
+    } catch (error) {
+      console.error("Error fetching reporter history:", error);
+      throw error;
+    }
+  },
+
+  async getContractThreatStats(contractAddress) {
+    try {
+      const response = await fetch(
+        `${API_URL}/reports/contract/${contractAddress}/stats`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch threat statistics");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error fetching threat statistics:", error);
       throw error;
     }
   },

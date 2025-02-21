@@ -4,6 +4,7 @@ import { BiSearch, BiScan } from "react-icons/bi";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { apiService } from "../services/apiService";
 
 function Report() {
   const navigate = useNavigate();
@@ -45,6 +46,31 @@ function Report() {
 
   useEffect(() => {
     const autoSubmit = async () => {
+      // Check if we have valid query parameters
+      const addressFromQuery = searchParams.get("address");
+      const threatsFromQuery = searchParams.get("threats");
+
+      // Don't auto-submit if either parameter is missing
+      if (!addressFromQuery || !threatsFromQuery) {
+        return;
+      }
+
+      // Don't auto-submit if the address is invalid
+      if (!ethers.isAddress(addressFromQuery)) {
+        return;
+      }
+
+      // Don't auto-submit if threats are invalid
+      try {
+        const decodedThreats = decodeURIComponent(threatsFromQuery).split(",");
+        if (!decodedThreats.length) {
+          return;
+        }
+      } catch {
+        return;
+      }
+
+      // Only proceed if all conditions are met
       if (
         searchQuery &&
         ethers.isAddress(searchQuery) &&
@@ -75,6 +101,8 @@ function Report() {
     isLoading,
     walletLoading,
     isRequestSended,
+    searchParams,
+    connectWallet,
   ]);
 
   const fetchThreatTypes = async () => {
@@ -134,7 +162,7 @@ function Report() {
         txHash: receipt.hash,
         address: searchQuery,
       });
-
+      await apiService.logReport(searchQuery, account, selectedThreats);
       setSelectedThreats([]);
     } catch (error) {
       console.error("Report generation error:", error);
