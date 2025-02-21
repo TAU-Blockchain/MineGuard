@@ -1,14 +1,13 @@
-<<<<<<< HEAD
- 
-=======
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TbReport } from "react-icons/tb";
 import { BiSearch, BiScan } from "react-icons/bi";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 function Report() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const {
     connectWallet,
     account,
@@ -21,10 +20,62 @@ function Report() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedThreats, setSelectedThreats] = useState([]);
   const [threatTypes, setThreatTypes] = useState([]);
+  const [isRequestSended, setIsRequestSended] = useState(false);
+  const submitButtonRef = useRef(null);
 
   useEffect(() => {
     fetchThreatTypes();
-  }, []);
+
+    const addressFromQuery = searchParams.get("address");
+    const threatsFromQuery = searchParams.get("threats");
+
+    if (addressFromQuery && ethers.isAddress(addressFromQuery)) {
+      setSearchQuery(addressFromQuery);
+    }
+
+    if (threatsFromQuery) {
+      try {
+        const decodedThreats = decodeURIComponent(threatsFromQuery).split(",");
+        setSelectedThreats(decodedThreats);
+      } catch (error) {
+        console.error("Error parsing threats from URL:", error);
+      }
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const autoSubmit = async () => {
+      if (
+        searchQuery &&
+        ethers.isAddress(searchQuery) &&
+        selectedThreats.length > 0 &&
+        submitButtonRef.current &&
+        !isLoading &&
+        !walletLoading &&
+        !isRequestSended
+      ) {
+        try {
+          setIsRequestSended(true);
+          if (!account) {
+            await connectWallet();
+          }
+          submitButtonRef.current.click();
+        } catch (error) {
+          console.error("Auto-submit failed:", error);
+          setIsRequestSended(false);
+        }
+      }
+    };
+
+    autoSubmit();
+  }, [
+    searchQuery,
+    selectedThreats,
+    account,
+    isLoading,
+    walletLoading,
+    isRequestSended,
+  ]);
 
   const fetchThreatTypes = async () => {
     try {
@@ -99,12 +150,14 @@ function Report() {
           error: true,
           message: "Transaction was rejected. Please try again.",
         });
+        setIsRequestSended(false);
       } else {
         setReportResult({
           error: true,
           message:
             error.message || "Failed to submit report. Please try again.",
         });
+        setIsRequestSended(false);
       }
     } finally {
       setIsLoading(false);
@@ -159,6 +212,7 @@ function Report() {
 
                 <div className="max-w-2xl mx-auto">
                   <button
+                    ref={submitButtonRef}
                     type="submit"
                     disabled={
                       isLoading ||
@@ -221,4 +275,3 @@ function Report() {
 }
 
 export default Report;
->>>>>>> webpage

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AiOutlineSecurityScan, AiOutlineHistory } from "react-icons/ai";
 import { ethers } from "ethers";
 import { useWeb3 } from "../context/Web3Context";
@@ -16,6 +16,30 @@ const Popup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [reportResult, setReportResult] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [threatTypes, setThreatTypes] = useState([]);
+  const [selectedThreats, setSelectedThreats] = useState([]);
+
+  useEffect(() => {
+    fetchThreatTypes();
+  }, [contract]);
+
+  const fetchThreatTypes = async () => {
+    try {
+      if (!contract) return;
+      const types = await contract.getThreatTypes();
+      setThreatTypes(types);
+    } catch (error) {
+      console.error("Error fetching threat types:", error);
+    }
+  };
+
+  const handleThreatChange = (threat) => {
+    setSelectedThreats((prev) =>
+      prev.includes(threat)
+        ? prev.filter((t) => t !== threat)
+        : [...prev, threat]
+    );
+  };
 
   const handleScanSubmit = async (e) => {
     e.preventDefault();
@@ -83,8 +107,17 @@ const Popup = () => {
       return;
     }
 
+    if (selectedThreats.length === 0) {
+      setReportResult({
+        error: true,
+        message: "Please select at least one threat type",
+      });
+      return;
+    }
+
+    const encodedThreats = encodeURIComponent(selectedThreats.join(","));
     window.open(
-      `http://localhost:5173/#/report?address=${searchQuery}`,
+      `http://localhost:5173/#/report?address=${searchQuery}&threats=${encodedThreats}`,
       "_blank"
     );
   };
@@ -114,7 +147,7 @@ const Popup = () => {
   };
 
   return (
-    <div className="w-[350px] min-h-[500px] bg-gradient-to-b from-[#9BC1BC] to-[#8AA6A3] text-white">
+    <div className="w-[350px] h-[600px] flex flex-col bg-gradient-to-b from-[#9BC1BC] to-[#8AA6A3] text-white">
       <header className="bg-[#9BC1BC]/90 backdrop-blur-sm shadow-lg p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-4xl font-pixelify bg-gradient-to-r from-white to-white/80 text-transparent bg-clip-text text-center">
@@ -124,21 +157,47 @@ const Popup = () => {
         <ModeSwitcher activeMode={activeMode} setActiveMode={setActiveMode} />
       </header>
 
-      <main className="p-6 flex flex-col items-center justify-start space-y-4">
-        <SearchBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          isLoading={isLoading}
-          activeMode={activeMode}
-          onSubmit={handleSubmit}
-        />
+      <main className="flex-1 p-6 overflow-y-auto">
+        <div className="flex flex-col items-center justify-start space-y-4">
+          <SearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isLoading={isLoading}
+            activeMode={activeMode}
+            onSubmit={handleSubmit}
+          />
 
-        {isLoading && <LoadingSpinner activeMode={activeMode} />}
+          {activeMode === "report" && (
+            <div className="w-full bg-white/10 backdrop-blur-sm rounded-xl p-4">
+              <h3 className="text-white font-semibold mb-3 text-sm">
+                Select Threat Types:
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {threatTypes.map((threat) => (
+                  <button
+                    key={threat}
+                    type="button"
+                    onClick={() => handleThreatChange(threat)}
+                    className={`p-2 rounded-lg text-sm text-center transition-all ${
+                      selectedThreats.includes(threat)
+                        ? "bg-[#ED6A5A] text-white"
+                        : "bg-white/20 text-white hover:bg-white/30"
+                    }`}
+                  >
+                    {threat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-        <ResultView reportResult={reportResult} isLoading={isLoading} />
+          {isLoading && <LoadingSpinner activeMode={activeMode} />}
+
+          <ResultView reportResult={reportResult} isLoading={isLoading} />
+        </div>
       </main>
 
-      <footer className="fixed bottom-0 w-full bg-[#ED6A5A] border-t border-white/10 shadow-lg">
+      <footer className="bg-[#ED6A5A] border-t border-white/10 shadow-lg mt-auto">
         <nav className="flex justify-around py-2">
           <TabButton
             id="scan"
