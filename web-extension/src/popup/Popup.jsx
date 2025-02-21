@@ -150,7 +150,7 @@ const Popup = () => {
     <div className="w-[350px] h-[600px] flex flex-col bg-gradient-to-b from-[#c6d5d3] to-[#8d908f] text-white">
       <header className="bg-[#ED6A5A] backdrop-blur-sm shadow-lg p-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl text-center font-pixelify bg-gradient-to-r from-white to-white/80 text-transparent bg-clip-text text-center">
+          <h1 className="text-4xl text-center font-pixelify bg-gradient-to-r from-white to-white/80 text-transparent bg-clip-text ">
             MineGuard
           </h1>
         </div>

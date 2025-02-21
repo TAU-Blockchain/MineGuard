@@ -14,7 +14,7 @@ import { useSearchParams } from "react-router-dom";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Scan() {
-  const { getReports, account } = useWeb3();
+  const { getReports, account, initializeProvider, contract } = useWeb3();
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [reportResult, setReportResult] = useState(null);
@@ -23,18 +23,34 @@ function Scan() {
   const [contractInfo, setContractInfo] = useState(null);
   const [isRequestSent, setIsRequestSent] = useState(false);
 
+  // Contract initialization effect
+  useEffect(() => {
+    const init = async () => {
+      if (!contract) {
+        try {
+          await initializeProvider();
+        } catch (error) {
+          console.error("Failed to initialize provider:", error);
+        }
+      }
+    };
+    init();
+  }, [contract, initializeProvider]);
+
+  // Address scanning effect
   useEffect(() => {
     const addressFromQuery = searchParams.get("address");
     if (
       addressFromQuery &&
       ethers.isAddress(addressFromQuery) &&
-      !isRequestSent
+      !isRequestSent &&
+      contract
     ) {
       setSearchQuery(addressFromQuery);
       setIsRequestSent(true);
       handleScanSubmit(null, addressFromQuery);
     }
-  }, [searchParams]);
+  }, [searchParams, contract]);
 
   const calculateThreatDistribution = (reports) => {
     const threatCount = {};

@@ -119,10 +119,10 @@ const ResultView = ({ reportResult, isLoading }) => {
               </div>
 
               <a
-                href={`http://localhost:5173/scan`}
+                href={`http://localhost:5173/#/scan?address=${reportResult.address}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center py-3 px-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-300 group"
+                className="inline-block mt-4 text-white/90 hover:text-white text-sm underline decoration-dotted underline-offset-4"
               >
                 <div className="text-white/90 font-pixelify text-sm group-hover:text-white">
                   View Full Report on Website
@@ -142,7 +142,7 @@ const ResultView = ({ reportResult, isLoading }) => {
                 Last Scan: {new Date(reportResult.timestamp).toLocaleString()}
               </p>
               <a
-                href={`https://mineguard.vercel.app/scan/${reportResult.address}`}
+                href={`http://localhost:5173/#/scan?address=${reportResult.address}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block mt-4 text-white/90 hover:text-white text-sm underline decoration-dotted underline-offset-4"
