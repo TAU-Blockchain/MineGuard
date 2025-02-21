@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const scanController = require("../controllers/scan.controller");
+const scanController = require("../controllers/scanController");
 
 // Save scan result
 router.post("/", scanController.saveScan);

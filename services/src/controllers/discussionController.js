@@ -1,4 +1,4 @@
-const Discussion = require("../models/discussion.model");
+const Discussion = require("../models/Discussion");
 
 exports.getDiscussions = async (req, res) => {
   try {

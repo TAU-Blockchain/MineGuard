@@ -1,4 +1,4 @@
-const Report = require("../models/report.model");
+const Report = require("../models/Report");
 
 // Save report
 exports.saveReport = async (req, res) => {

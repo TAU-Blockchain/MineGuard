@@ -1,4 +1,4 @@
-const Scan = require("../models/scan.model");
+const Scan = require("../models/Scan");
 
 // Save scan result
 exports.saveScan = async (req, res) => {

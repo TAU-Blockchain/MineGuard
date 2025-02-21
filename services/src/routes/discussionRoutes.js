@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const discussionController = require("../controllers/discussion.controller");
+const discussionController = require("../controllers/discussionController");
 
 // Get all discussions with optional filtering
 router.get("/", discussionController.getDiscussions);

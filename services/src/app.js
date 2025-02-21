@@ -5,9 +5,9 @@ const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
-const discussionRoutes = require("./routes/discussion.routes");
-const scanRoutes = require("./routes/scan.routes");
-const reportRoutes = require("./routes/report.routes");
+const discussionRoutes = require("./routes/discussionRoutes");
+const scanRoutes = require("./routes/scanRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 
 const app = express();
 
