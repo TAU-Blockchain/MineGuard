@@ -14,4 +14,10 @@ router.get("/reporter/:reporter", reportController.getReportsByReporter);
 // Get threat statistics for a contract
 router.get("/contract/:contractAddress/stats", reportController.getThreatStats);
 
+// Get popular threat types (leaderboard)
+router.get("/stats/threats", reportController.getPopularThreatTypes);
+
+// Get most reported contracts (leaderboard)
+router.get("/stats/contracts", reportController.getMostReportedContracts);
+
 module.exports = router;

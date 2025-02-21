@@ -452,4 +452,50 @@ export const apiService = {
       throw error;
     }
   },
+
+  // Leaderboard endpoints
+  async getPopularThreatTypes() {
+    try {
+      const response = await fetch(`${API_URL}/reports/stats/threats`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch popular threat types");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error fetching popular threat types:", error);
+      throw error;
+    }
+  },
+
+  async getMostReportedContracts(limit = 10) {
+    try {
+      const response = await fetch(
+        `${API_URL}/reports/stats/contracts?limit=${limit}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch most reported contracts");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error fetching most reported contracts:", error);
+      throw error;
+    }
+  },
 };

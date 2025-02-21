@@ -1,5 +1,7 @@
 import { FaRocket, FaLightbulb, FaUsers } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import Leaderboard from "../components/Leaderboard";
+
 function Home() {
   return (
     <div className="min-h-screen">
@@ -78,6 +80,21 @@ function Home() {
       </section>
 
       <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-pixelify text-[#ED6A5A]">
+              Security Insights
+            </h2>
+            <p className="text-gray-600">
+              Stay informed about the latest security threats and most reported
+              contracts
+            </p>
+          </div>
+          <Leaderboard />
+        </div>
+      </section>
+
+      <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 font-pixelify">

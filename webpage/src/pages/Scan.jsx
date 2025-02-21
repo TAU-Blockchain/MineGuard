@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BiSearch, BiChevronDown } from "react-icons/bi";
 import { HiCode, HiShieldExclamation, HiShieldCheck } from "react-icons/hi";
 import { MdVerified, MdWarning } from "react-icons/md";
@@ -9,16 +9,32 @@ import { Pie } from "react-chartjs-2";
 import { apiService } from "../services/apiService";
 import Badge from "../components/Badge";
 import Discussion from "../components/Discussion";
+import { useSearchParams } from "react-router-dom";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Scan() {
   const { getReports, account } = useWeb3();
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [reportResult, setReportResult] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleReports, setVisibleReports] = useState(5);
   const [contractInfo, setContractInfo] = useState(null);
+  const [isRequestSent, setIsRequestSent] = useState(false);
+
+  useEffect(() => {
+    const addressFromQuery = searchParams.get("address");
+    if (
+      addressFromQuery &&
+      ethers.isAddress(addressFromQuery) &&
+      !isRequestSent
+    ) {
+      setSearchQuery(addressFromQuery);
+      setIsRequestSent(true);
+      handleScanSubmit(null, addressFromQuery);
+    }
+  }, [searchParams]);
 
   const calculateThreatDistribution = (reports) => {
     const threatCount = {};
@@ -65,24 +81,29 @@ function Scan() {
     setSearchQuery(e.target.value);
   };
 
-  const handleScanSubmit = async (e) => {
-    e.preventDefault();
+  const handleScanSubmit = async (e, addressOverride = null) => {
+    if (e) {
+      e.preventDefault();
+    }
+
     setIsLoading(true);
     setReportResult(null);
     setContractInfo(null);
 
     try {
-      if (!searchQuery || !searchQuery.trim()) {
+      const addressToScan = addressOverride || searchQuery;
+
+      if (!addressToScan || !addressToScan.trim()) {
         throw new Error("Please enter a valid contract address");
       }
 
-      if (!ethers.isAddress(searchQuery)) {
+      if (!ethers.isAddress(addressToScan)) {
         throw new Error("Invalid Ethereum address format");
       }
 
       const [verificationStatus, contractDetails] = await Promise.all([
-        apiService.getContractVerificationStatus(searchQuery),
-        apiService.getContractDetails(searchQuery),
+        apiService.getContractVerificationStatus(addressToScan),
+        apiService.getContractDetails(addressToScan),
       ]);
 
       setContractInfo({
@@ -90,22 +111,25 @@ function Scan() {
         contractDetails,
       });
 
-      const reports = await getReports(searchQuery);
+      const reports = await getReports(addressToScan);
 
       const formattedResult = {
-        address: searchQuery,
+        address: addressToScan,
         reports: reports,
         timestamp: new Date().toISOString(),
       };
+
       await apiService.logScan(
-        searchQuery,
+        addressToScan,
         account,
-        verificationStatus.isVerified,
+        verificationStatus,
         contractDetails
       );
 
       setReportResult(formattedResult);
-      setSearchQuery("");
+      if (!addressOverride) {
+        setSearchQuery("");
+      }
     } catch (error) {
       console.error("Scan error:", error);
 

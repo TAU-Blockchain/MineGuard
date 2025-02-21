@@ -121,3 +121,85 @@ exports.getThreatStats = async (req, res) => {
     });
   }
 };
+
+// Get popular threat types
+exports.getPopularThreatTypes = async (req, res) => {
+  try {
+    const stats = await Report.aggregate([
+      { $unwind: "$threats" },
+      {
+        $group: {
+          _id: "$threats",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          threat: "$_id",
+          count: 1,
+          _id: 0,
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching threat statistics",
+      error: error.message,
+    });
+  }
+};
+
+// Get most reported contracts
+exports.getMostReportedContracts = async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+
+    const stats = await Report.aggregate([
+      {
+        $group: {
+          _id: "$contractAddress",
+          reportCount: { $sum: 1 },
+          uniqueReporters: { $addToSet: "$reporter" },
+          threats: { $push: "$threats" },
+          lastReportDate: { $max: "$reportDate" },
+        },
+      },
+      {
+        $project: {
+          contractAddress: "$_id",
+          reportCount: 1,
+          uniqueReporterCount: { $size: "$uniqueReporters" },
+          uniqueThreats: {
+            $reduce: {
+              input: "$threats",
+              initialValue: [],
+              in: { $setUnion: ["$$value", "$$this"] },
+            },
+          },
+          lastReportDate: 1,
+          _id: 0,
+        },
+      },
+      { $sort: { reportCount: -1, lastReportDate: -1 } },
+      { $limit: parseInt(limit) },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching most reported contracts",
+      error: error.message,
+    });
+  }
+};
