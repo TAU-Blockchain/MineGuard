@@ -284,4 +284,172 @@ export const apiService = {
       return null;
     }
   },
+
+  async getDiscussions(contractAddress = null, page = 1, limit = 10) {
+    try {
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+
+      if (contractAddress) {
+        queryParams.append("contractAddress", contractAddress);
+      }
+
+      const response = await fetch(`${API_URL}/discussions?${queryParams}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch discussions");
+      }
+
+      const data = await response.json();
+      return data.success
+        ? {
+            discussions: data.data,
+            currentPage: data.currentPage,
+            totalPages: data.totalPages,
+            totalDiscussions: data.totalDiscussions,
+          }
+        : null;
+    } catch (error) {
+      console.error("Error fetching discussions:", error);
+      throw error;
+    }
+  },
+
+  async getDiscussion(discussionId) {
+    try {
+      const response = await fetch(`${API_URL}/discussions/${discussionId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error("Failed to fetch discussion");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error fetching discussion:", error);
+      throw error;
+    }
+  },
+
+  async createDiscussion(discussionData) {
+    try {
+      const response = await fetch(`${API_URL}/discussions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(discussionData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create discussion");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error creating discussion:", error);
+      throw error;
+    }
+  },
+
+  async addReply(discussionId, replyData) {
+    try {
+      const response = await fetch(
+        `${API_URL}/discussions/${discussionId}/replies`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(replyData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add reply");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      throw error;
+    }
+  },
+
+  async voteDiscussion(discussionId, walletAddress, voteType) {
+    try {
+      const response = await fetch(
+        `${API_URL}/discussions/${discussionId}/vote`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            walletAddress,
+            voteType,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to vote on discussion");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error voting on discussion:", error);
+      throw error;
+    }
+  },
+
+  async voteReply(discussionId, replyId, walletAddress, voteType) {
+    try {
+      const response = await fetch(
+        `${API_URL}/discussions/${discussionId}/replies/${replyId}/vote`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            walletAddress,
+            voteType,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to vote on reply");
+      }
+
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error("Error voting on reply:", error);
+      throw error;
+    }
+  },
 };

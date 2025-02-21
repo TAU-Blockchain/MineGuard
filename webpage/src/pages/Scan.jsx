@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BiSearch, BiChevronDown } from "react-icons/bi";
-import { HiCode, HiShieldCheck, HiShieldExclamation } from "react-icons/hi";
+import { HiCode, HiShieldExclamation } from "react-icons/hi";
 import { MdVerified, MdWarning } from "react-icons/md";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
@@ -8,6 +8,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
 import { apiService } from "../services/apiService";
 import Badge from "../components/Badge";
+import Discussion from "../components/Discussion";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -247,19 +248,12 @@ function Scan() {
                               />
                             )}
 
-                            {contractInfo.isScam ? (
+                            {contractInfo.isVerified && contractInfo.isScam && (
                               <Badge
                                 icon={MdWarning}
                                 text="Scam"
                                 color="bg-red-100 text-red-700"
                                 tooltipText="This contract has been flagged as potentially fraudulent"
-                              />
-                            ) : (
-                              <Badge
-                                icon={HiShieldCheck}
-                                text="Safe"
-                                color="bg-green-100 text-green-700"
-                                tooltipText="This contract has been marked as safe"
                               />
                             )}
 
@@ -364,22 +358,15 @@ function Scan() {
                                       tooltipText="This contract's source code is not verified, be cautious"
                                     />
                                   )}
-
-                                  {contractInfo.isScam ? (
-                                    <Badge
-                                      icon={MdWarning}
-                                      text="Scam"
-                                      color="bg-red-100 text-red-700"
-                                      tooltipText="This contract has been flagged as potentially fraudulent"
-                                    />
-                                  ) : (
-                                    <Badge
-                                      icon={HiShieldCheck}
-                                      text="Safe"
-                                      color="bg-green-100 text-green-700"
-                                      tooltipText="This contract has been marked as safe"
-                                    />
-                                  )}
+                                  {contractInfo.isVerified &&
+                                    contractInfo.isScam && (
+                                      <Badge
+                                        icon={MdWarning}
+                                        text="Scam"
+                                        color="bg-red-100 text-red-700"
+                                        tooltipText="This contract has been flagged as potentially fraudulent"
+                                      />
+                                    )}
 
                                   {contractInfo.contractDetails && (
                                     <>
@@ -583,6 +570,10 @@ function Scan() {
                 </div>
               )}
             </div>
+          )}
+
+          {reportResult && !reportResult.error && (
+            <Discussion contractAddress={reportResult.address} />
           )}
         </div>
       </section>
