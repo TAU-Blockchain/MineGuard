@@ -1,13 +1,63 @@
 import { useState } from "react";
-import { BiSearch } from "react-icons/bi";
-import { useContract } from "../hooks/useContract";
+import { BiSearch, BiChevronDown } from "react-icons/bi";
+import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Pie } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Scan() {
-  const contract = useContract();
+  const { getReports } = useWeb3();
   const [isLoading, setIsLoading] = useState(false);
   const [reportResult, setReportResult] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleReports, setVisibleReports] = useState(5);
+
+  const calculateThreatDistribution = (reports) => {
+    const threatCount = {};
+    let totalThreats = 0;
+
+    reports.forEach((report) => {
+      report.threats.forEach((threat) => {
+        threatCount[threat] = (threatCount[threat] || 0) + 1;
+        totalThreats++;
+      });
+    });
+
+    const labels = Object.keys(threatCount);
+    const data = Object.values(threatCount);
+    const percentages = data.map((count) =>
+      ((count / totalThreats) * 100).toFixed(1)
+    );
+
+    return {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: [
+            "#ED6A5A",
+            "#F4F1BB",
+            "#9BC1BC",
+            "#5CA4A9",
+            "#E6EBE0",
+            "#FF9B85",
+            "#FFD7D2",
+            "#B8E0DC",
+          ],
+          borderColor: "white",
+          borderWidth: 2,
+        },
+      ],
+      percentages,
+    };
+  };
+
+  const handleSearchQueryChange = (e) => {
+    setReportResult(null);
+    setSearchQuery(e.target.value);
+  };
 
   const handleScanSubmit = async (e) => {
     e.preventDefault();
@@ -15,12 +65,6 @@ function Scan() {
     setReportResult(null);
 
     try {
-      if (!contract) {
-        throw new Error(
-          "Contract is not initialized yet. Please try again in a moment."
-        );
-      }
-
       if (!searchQuery || !searchQuery.trim()) {
         throw new Error("Please enter a valid contract address");
       }
@@ -29,37 +73,54 @@ function Scan() {
         throw new Error("Invalid Ethereum address format");
       }
 
-      console.log("Contract instance:", contract);
-      console.log("Scanning address:", searchQuery);
-
-      const scanResult = await contract.getReports(searchQuery);
-      console.log("Raw scan result:", scanResult);
-
-      const formattedReports = scanResult.map((report) => {
-        const [threats, reporter, timestamp] = report;
-        const dateTimestamp = Number(timestamp.toString()) * 1000;
-        return [threats, reporter, new Date(dateTimestamp).toISOString()];
-      });
+      const reports = await getReports(searchQuery);
 
       const formattedResult = {
         address: searchQuery,
-        reports: formattedReports,
+        reports: reports,
         timestamp: new Date().toISOString(),
       };
 
-      console.log("Formatted result:", formattedResult);
       setReportResult(formattedResult);
+      setSearchQuery("");
     } catch (error) {
       console.error("Scan error:", error);
-      setReportResult({
-        error: true,
-        message:
-          error.message ||
-          "An error occurred while scanning. Please try again.",
-      });
+
+      if (error.message.includes("contract not found")) {
+        setReportResult({
+          error: true,
+          message:
+            "Contract not found at this address. Please verify the address and try again.",
+        });
+      } else if (error.message.includes("network error")) {
+        setReportResult({
+          error: true,
+          message:
+            "Network error occurred. Please check your connection and try again.",
+        });
+      } else {
+        setReportResult({
+          error: true,
+          message:
+            error.message ||
+            "An error occurred while scanning. Please try again.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleShowMore = () => {
+    setVisibleReports((prev) => prev + 5);
+  };
+
+  const sortReportsByTimestamp = (reports) => {
+    return [...reports].sort((a, b) => {
+      const timestampA = new Date(a.timestamp).getTime();
+      const timestampB = new Date(b.timestamp).getTime();
+      return timestampB - timestampA;
+    });
   };
 
   return (
@@ -80,7 +141,7 @@ function Scan() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchQueryChange}
                   placeholder="Enter contract address to scan..."
                   className="w-full pl-6 pr-12 py-4 rounded-full bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ED6A5A]"
                 />
@@ -122,45 +183,35 @@ function Scan() {
                 </div>
               ) : (
                 <div className="grid gap-8">
-                  <div className="bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A] text-center">
-                    <h3 className="text-xl text-[#ED6A5A] font-semibold mb-4">
-                      Scanned Address
-                    </h3>
-                    <div className="font-mono text-sm break-all text-gray-600">
-                      {reportResult.address}
-                    </div>
-                  </div>
-
                   {reportResult.reports.length === 0 ? (
                     <div className="bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A] text-center">
                       <div className="text-[#ED6A5A] text-lg font-medium">
-                        No reports found for this address.
+                        No reports found for this address. This address appears
+                        to be safe!
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      {reportResult.reports.map((report, index) => {
-                        const [threats, reporter, timestamp] = report;
-                        return (
-                          <div
-                            key={index}
-                            className="bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A] text-center"
-                          >
-                            <div className="flex flex-wrap gap-2 justify-center mb-4">
-                              {threats.map((threat, i) => (
-                                <span
-                                  key={i}
-                                  className="px-4 py-1 text-sm font-medium rounded-full bg-[#ED6A5A] text-white"
-                                >
-                                  {threat}
-                                </span>
-                              ))}
+                    <>
+                      {/* Combined Address and Chart Section */}
+                      <div className="bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A]">
+                        <div className="grid md:grid-cols-2 gap-8">
+                          {/* Left Side - Address Info */}
+                          <div className="flex flex-col justify-start items-start">
+                            <h3 className="text-xl text-[#ED6A5A] font-semibold mb-4">
+                              Scanned Address
+                            </h3>
+                            <div className="font-mono text-sm break-all text-gray-600 mb-4">
+                              {reportResult.address}
                             </div>
                             <div className="text-sm text-[#ed6b5aa1]">
-                              <div>Reporter: {reporter}</div>
+                              <div className="mb-2">
+                                Total Reports: {reportResult.reports.length}
+                              </div>
                               <div>
-                                Scan Time:{" "}
-                                {new Date(timestamp).toLocaleString("tr-TR", {
+                                Last Scan:{" "}
+                                {new Date(
+                                  reportResult.timestamp
+                                ).toLocaleString("tr-TR", {
                                   year: "numeric",
                                   month: "long",
                                   day: "numeric",
@@ -171,9 +222,142 @@ function Scan() {
                               </div>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          {/* Right Side - Chart */}
+                          <div className="flex flex-col items-center">
+                            <h3 className="text-xl text-[#ED6A5A] font-semibold mb-6">
+                              Threat Distribution
+                            </h3>
+                            <div className="flex items-start gap-8">
+                              <div className="w-64 h-64">
+                                <Pie
+                                  data={calculateThreatDistribution(
+                                    reportResult.reports
+                                  )}
+                                  options={{
+                                    plugins: {
+                                      legend: {
+                                        display: false,
+                                      },
+                                      tooltip: {
+                                        enabled: false,
+                                      },
+                                    },
+                                    maintainAspectRatio: true,
+                                  }}
+                                />
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                {calculateThreatDistribution(
+                                  reportResult.reports
+                                ).labels.map((label, index) => {
+                                  const dataset = calculateThreatDistribution(
+                                    reportResult.reports
+                                  ).datasets[0];
+                                  const value = dataset.data[index];
+                                  const total = dataset.data.reduce(
+                                    (acc, data) => acc + data,
+                                    0
+                                  );
+                                  const percentage = (
+                                    (value / total) *
+                                    100
+                                  ).toFixed(1);
+                                  const backgroundColor =
+                                    dataset.backgroundColor[index];
+
+                                  return (
+                                    <div
+                                      key={label}
+                                      className="flex items-center gap-2 text-sm"
+                                    >
+                                      <div
+                                        className="w-3 h-3 rounded-full"
+                                        style={{ backgroundColor }}
+                                      />
+                                      <span className="font-medium">
+                                        {label}:
+                                      </span>
+                                      <span className="text-[#ed6b5aa1]">
+                                        {value} ({percentage}%)
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Reports Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 auto-rows-fr">
+                        {sortReportsByTimestamp(reportResult.reports)
+                          .slice(0, visibleReports)
+                          .map((report, index, array) => {
+                            const isFullWidth = array.length === 1;
+
+                            const isLastItemFullWidth =
+                              array.length > 2 &&
+                              array.length % 2 === 1 &&
+                              index === array.length - 1;
+
+                            return (
+                              <div
+                                key={index}
+                                className={`bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A] text-center ${
+                                  isFullWidth || isLastItemFullWidth
+                                    ? "md:col-span-2"
+                                    : ""
+                                }`}
+                              >
+                                <div className="flex flex-wrap gap-2 justify-center mb-4">
+                                  {report.threats.map((threat, i) => (
+                                    <span
+                                      key={i}
+                                      className="px-4 py-1 text-sm font-medium rounded-full bg-[#ED6A5A] text-white"
+                                    >
+                                      {threat}
+                                    </span>
+                                  ))}
+                                </div>
+                                <div className="text-sm text-[#ed6b5aa1]">
+                                  <div>Reporter: {report.reporter}</div>
+                                  <div>
+                                    Scan Time:{" "}
+                                    {new Date(report.timestamp).toLocaleString(
+                                      "tr-TR",
+                                      {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: false,
+                                      }
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+
+                      {/* Show More Button */}
+                      {reportResult.reports.length > visibleReports && (
+                        <div className="flex justify-center mt-8">
+                          <button
+                            onClick={handleShowMore}
+                            className="flex items-center gap-2 bg-white text-[#ED6A5A] px-6 py-3 rounded-full hover:bg-[#ED6A5A] hover:text-white border border-[#ED6A5A] transition duration-300"
+                          >
+                            <BiChevronDown className="text-xl" />
+                            Daha Fazla Göster (
+                            {reportResult.reports.length - visibleReports} rapor
+                            kaldı)
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               )}

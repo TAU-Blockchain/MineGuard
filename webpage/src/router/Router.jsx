@@ -5,25 +5,23 @@ import NotFound from "../pages/NotFound";
 import Admin from "../pages/Admin";
 import Scan from "../components/Scan";
 import Report from "../components/Report";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 function Router() {
-  const routes = [
-    { path: "/", element: Home },
-    { path: "/admin", element: Admin },
-    { path: "/scan", element: Scan },
-    { path: "/report", element: Report },
-  ];
-
   return (
     <Layout>
       <Routes>
-        {routes.map((route) => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={<route.element />}
-          />
-        ))}
+        <Route path="/" element={<Home />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/scan" element={<Scan />} />
+        <Route
+          path="/report"
+          element={
+            <ProtectedRoute>
+              <Report />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

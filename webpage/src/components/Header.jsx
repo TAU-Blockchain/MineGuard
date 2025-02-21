@@ -1,29 +1,67 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useWeb3 } from "../context/Web3Context";
 import Logo from "../assets/logo.svg";
+
 function Header() {
+  const location = useLocation();
+  const { connectWallet, account, isLoading } = useWeb3();
+
   return (
-    <header className="bg-[#9BC1BC] min-h-20 shadow-md flex flex-row justify-center items-center w-full px-20">
-      <nav className="flex flex-row justify-between items-center w-full">
-        <div className="flex flex-row items-center justify-center flex-shrink-0">
-          <img className="h-20 w-auto" src={Logo} alt="Logo" />
-          <Link to="/" className="text-[#eaf3fc]  text-5xl font-pixelify">
-            MineGuard
-          </Link>
-        </div>
-        <div className="hidden sm:ml-6 sm:block">
-          <div className="space-x-8">
-            <Link to="/" className="text-white  text-3xl font-pixelify">
-              Home
-            </Link>
-            <Link to="/scan" className="text-white  text-3xl font-pixelify">
-              Scan
-            </Link>
-            <Link to="/report" className="text-white  text-3xl font-pixelify">
-              Report
+    <header className="bg-[#9BC1BC] text-white py-4 shadow-lg">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img src={Logo} alt="Logo" className="h-20 w-auto" />
+            <Link to="/" className="text-2xl font-pixelify">
+              Units Security Scanner
             </Link>
           </div>
+
+          <div className="flex items-center gap-6">
+            <nav className="flex gap-4">
+              <Link
+                to="/"
+                className={`hover:text-gray-200 ${
+                  location.pathname === "/" ? "font-bold" : ""
+                }`}
+              >
+                Home
+              </Link>
+              <Link
+                to="/scan"
+                className={`hover:text-gray-200  ${
+                  location.pathname === "/scan" ? "font-bold" : ""
+                }`}
+              >
+                Scan
+              </Link>
+              <Link
+                to="/report"
+                className={`hover:text-gray-200 ${
+                  !account ? "opacity-50 cursor-not-allowed" : ""
+                } ${location.pathname === "/report" ? "font-bold" : ""}`}
+                onClick={(e) => !account && e.preventDefault()}
+              >
+                Report
+              </Link>
+            </nav>
+
+            {!account ? (
+              <button
+                onClick={connectWallet}
+                disabled={isLoading}
+                className="bg-[#ED6A5A] text-white px-4 py-2 rounded-full font-semibold hover:bg-white hover:text-[#ED6A5A] transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Connecting..." : "Connect Wallet"}
+              </button>
+            ) : (
+              <div className="bg-white/10 px-4 py-2 rounded-full">
+                {account.slice(0, 6)}...{account.slice(-4)}
+              </div>
+            )}
+          </div>
         </div>
-      </nav>
+      </div>
     </header>
   );
 }

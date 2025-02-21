@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import { TbReport } from "react-icons/tb";
-import { BiSearch } from "react-icons/bi";
-import { useContract } from "../hooks/useContract";
+import { BiSearch, BiScan } from "react-icons/bi";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
-
+import { useNavigate } from "react-router-dom";
 function Report() {
-  const contract = useContract();
-  const { connectWallet, account } = useWeb3();
+  const navigate = useNavigate();
+  const {
+    connectWallet,
+    account,
+    submitReport,
+    getThreatTypes,
+    isLoading: walletLoading,
+  } = useWeb3();
   const [isLoading, setIsLoading] = useState(false);
   const [reportResult, setReportResult] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,12 +21,11 @@ function Report() {
 
   useEffect(() => {
     fetchThreatTypes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchThreatTypes = async () => {
     try {
-      const types = await contract.getThreatTypes();
+      const types = await getThreatTypes();
       setThreatTypes(types);
     } catch (error) {
       console.error("Error fetching threat types:", error);
@@ -29,6 +33,7 @@ function Report() {
   };
 
   const handleThreatChange = (threat) => {
+    setReportResult(null);
     setSelectedThreats((prev) =>
       prev.includes(threat)
         ? prev.filter((t) => t !== threat)
@@ -36,18 +41,23 @@ function Report() {
     );
   };
 
+  const handleSearchQueryChange = (e) => {
+    setReportResult(null);
+    setSearchQuery(e.target.value);
+  };
+
+  const handleViewScan = () => {
+    navigate(`/scan?address=${searchQuery}`);
+  };
+
   const handleReportSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setReportResult(null);
+
     try {
       if (!account) {
         await connectWallet();
-      }
-
-      if (!contract) {
-        throw new Error(
-          "Contract is not initialized yet. Please try again in a moment."
-        );
       }
 
       if (!searchQuery || !searchQuery.trim()) {
@@ -62,28 +72,37 @@ function Report() {
         throw new Error("Please select at least one threat type");
       }
 
-      console.log("Contract instance:", contract);
-      console.log("Reporting address:", searchQuery);
-      console.log("Selected threats:", selectedThreats);
-
-      const tx = await contract.report(searchQuery, selectedThreats);
-
-      console.log("Transaction sent:", tx.hash);
-
-      const receipt = await tx.wait();
-      console.log("Transaction confirmed:", receipt);
+      const receipt = await submitReport(searchQuery, selectedThreats);
 
       setReportResult({
         success: true,
         message: "Report submitted successfully!",
-        txHash: tx.hash,
+        txHash: receipt.hash,
+        address: searchQuery,
       });
+
+      setSelectedThreats([]);
     } catch (error) {
       console.error("Report generation error:", error);
-      setReportResult({
-        error: true,
-        message: error.message || "Failed to submit report. Please try again.",
-      });
+
+      if (error.message.includes("You have already reported")) {
+        setReportResult({
+          error: true,
+          message:
+            "You have already reported this address. Each address can only be reported once per wallet.",
+        });
+      } else if (error.message.includes("user rejected transaction")) {
+        setReportResult({
+          error: true,
+          message: "Transaction was rejected. Please try again.",
+        });
+      } else {
+        setReportResult({
+          error: true,
+          message:
+            error.message || "Failed to submit report. Please try again.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +125,7 @@ function Report() {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={handleSearchQueryChange}
                     placeholder="Enter contract address to report..."
                     className="w-full pl-6 pr-12 py-4 rounded-full bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#ED6A5A]"
                   />
@@ -140,12 +159,19 @@ function Report() {
                     type="submit"
                     disabled={
                       isLoading ||
+                      walletLoading ||
                       !searchQuery.trim() ||
                       selectedThreats.length === 0
                     }
                     className="w-full bg-[#ED6A5A] text-white py-4 rounded-full hover:bg-white hover:text-[#ED6A5A] border border-[#ED6A5A] transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? "Submitting Report..." : "Submit Report"}
+                    {isLoading || walletLoading ? (
+                      <p className="inline-flex items-center">
+                        Generating Report
+                      </p>
+                    ) : (
+                      "Submit Report"
+                    )}
                   </button>
                 </div>
               </div>
@@ -156,10 +182,9 @@ function Report() {
 
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
-          {isLoading && (
+          {(isLoading || walletLoading) && (
             <div className="flex flex-col items-center justify-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ED6A5A] mb-4"></div>
-              <p className="text-gray-600">Generating report...</p>
             </div>
           )}
 
@@ -175,6 +200,13 @@ function Report() {
                   <div className="text-[#ED6A5A] text-xl font-medium mb-4">
                     {reportResult.message}
                   </div>
+                  <button
+                    onClick={handleViewScan}
+                    className="mt-4 inline-flex items-center gap-2 bg-[#ED6A5A] text-white px-6 py-2 rounded-full hover:bg-white hover:text-[#ED6A5A] border border-[#ED6A5A] transition duration-300"
+                  >
+                    <BiScan className="text-xl" />
+                    View Scan Results
+                  </button>
                 </>
               )}
             </div>

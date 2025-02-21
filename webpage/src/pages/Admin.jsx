@@ -1,77 +1,43 @@
 import { useState, useEffect } from "react";
-import { ethers } from "ethers";
 import { BiPlus, BiTrash, BiRefresh } from "react-icons/bi";
-import ADDRESS from "../constant/ADDRESS";
-import ABI from "../constant/ABI";
+import { useWeb3 } from "../context/Web3Context";
 
 export default function Admin() {
-  const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
-  const [contract, setContract] = useState(null);
-  const [account, setAccount] = useState(null);
+  const {
+    connectWallet,
+    account,
+    getThreatTypes,
+    addThreatType,
+    addOwner,
+    removeOwner,
+    isLoading: walletLoading,
+  } = useWeb3();
+  const [isLoading, setIsLoading] = useState(false);
   const [newOwner, setNewOwner] = useState("");
   const [newThreatType, setNewThreatType] = useState("");
   const [threatTypes, setThreatTypes] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [adminList, setAdminList] = useState([
-    "0x826189D971aaF25D078C1A4521f284847AE4C51b",
-    "0x12312asdasda",
-  ]);
 
   useEffect(() => {
-    if (contract) {
+    if (account) {
       fetchThreatTypes();
     }
-  }, [contract]);
-
-  const connectWallet = async () => {
-    setIsLoading(true);
-    try {
-      if (!window.ethereum) {
-        throw new Error("Please install MetaMask to connect a wallet");
-      }
-
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
-      if (!accounts || accounts.length === 0) {
-        throw new Error("No accounts found");
-      }
-
-      const provider_ = new ethers.BrowserProvider(window.ethereum);
-      const signer_ = await provider_.getSigner();
-      const account_ = await signer_.getAddress();
-      const contract_ = new ethers.Contract(ADDRESS, ABI, signer_);
-
-      setProvider(provider_);
-      setSigner(signer_);
-      setAccount(account_);
-      setContract(contract_);
-
-      console.log("Wallet connected:", account_);
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account]);
 
   const fetchThreatTypes = async () => {
     try {
-      const types = await contract.getThreatTypes();
+      const types = await getThreatTypes();
       setThreatTypes(types);
     } catch (error) {
       console.error("Error fetching threat types:", error);
     }
   };
 
-  const addOwner = async () => {
-    if (contract && newOwner.trim()) {
+  const handleAddOwner = async () => {
+    if (newOwner.trim()) {
       try {
         setIsLoading(true);
-        const tx = await contract.addOwner(newOwner);
-        await tx.wait();
+        await addOwner(newOwner);
         setNewOwner("");
       } catch (error) {
         console.error("Error adding owner:", error);
@@ -81,12 +47,11 @@ export default function Admin() {
     }
   };
 
-  const removeOwner = async () => {
-    if (contract && newOwner.trim()) {
+  const handleRemoveOwner = async () => {
+    if (newOwner.trim()) {
       try {
         setIsLoading(true);
-        const tx = await contract.removeOwner(newOwner);
-        await tx.wait();
+        await removeOwner(newOwner);
         setNewOwner("");
       } catch (error) {
         console.error("Error removing owner:", error);
@@ -96,12 +61,11 @@ export default function Admin() {
     }
   };
 
-  const addThreatType = async () => {
-    if (contract && newThreatType.trim()) {
+  const handleAddThreatType = async () => {
+    if (newThreatType.trim()) {
       try {
         setIsLoading(true);
-        const tx = await contract.addThreatType(newThreatType);
-        await tx.wait();
+        await addThreatType(newThreatType);
         setNewThreatType("");
         await fetchThreatTypes();
       } catch (error) {
@@ -126,10 +90,10 @@ export default function Admin() {
             {!account ? (
               <button
                 onClick={connectWallet}
-                disabled={isLoading}
+                disabled={walletLoading}
                 className="bg-[#ED6A5A] text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-[#ED6A5A] transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Connecting..." : "Connect Wallet"}
+                {walletLoading ? "Connecting..." : "Connect Wallet"}
               </button>
             ) : (
               <p className="bg-white/10 px-6 py-2 rounded-full inline-block">
@@ -158,7 +122,7 @@ export default function Admin() {
                   />
                   <div className="flex gap-4">
                     <button
-                      onClick={addOwner}
+                      onClick={handleAddOwner}
                       disabled={isLoading || !newOwner.trim()}
                       className="flex-1 bg-[#ED6A5A] text-white px-4 py-2 rounded-full hover:bg-white hover:text-[#ED6A5A] border border-[#ED6A5A] transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
@@ -166,7 +130,7 @@ export default function Admin() {
                       Add Owner
                     </button>
                     <button
-                      onClick={removeOwner}
+                      onClick={handleRemoveOwner}
                       disabled={isLoading || !newOwner.trim()}
                       className="flex-1 bg-white text-[#ED6A5A] px-4 py-2 rounded-full hover:bg-[#ED6A5A] hover:text-white border border-[#ED6A5A] transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
@@ -191,7 +155,7 @@ export default function Admin() {
                       className="flex-1 px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#ED6A5A]"
                     />
                     <button
-                      onClick={addThreatType}
+                      onClick={handleAddThreatType}
                       disabled={isLoading || !newThreatType.trim()}
                       className="bg-[#ED6A5A] text-white px-4 py-2 rounded-full hover:bg-white hover:text-[#ED6A5A] border border-[#ED6A5A] transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
