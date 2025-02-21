@@ -118,9 +118,8 @@ const ResultView = ({ reportResult, isLoading }) => {
                 ))}
               </div>
 
-              {/* View More Link */}
               <a
-                href={`https://mineguard.vercel.app/scan/${reportResult.address}`}
+                href={`http://localhost:5173/scan`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block text-center py-3 px-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-300 group"

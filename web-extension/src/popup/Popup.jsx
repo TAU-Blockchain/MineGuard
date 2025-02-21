@@ -147,15 +147,15 @@ const Popup = () => {
   };
 
   return (
-    <div className="w-[350px] h-[600px] flex flex-col bg-gradient-to-b from-[#9BC1BC] to-[#8AA6A3] text-white">
-      <header className="bg-[#9BC1BC]/90 backdrop-blur-sm shadow-lg p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl font-pixelify bg-gradient-to-r from-white to-white/80 text-transparent bg-clip-text text-center">
+    <div className="w-[350px] h-[600px] flex flex-col bg-gradient-to-b from-[#c6d5d3] to-[#8d908f] text-white">
+      <header className="bg-[#ED6A5A] backdrop-blur-sm shadow-lg p-2">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl text-center font-pixelify bg-gradient-to-r from-white to-white/80 text-transparent bg-clip-text text-center">
             MineGuard
           </h1>
         </div>
-        <ModeSwitcher activeMode={activeMode} setActiveMode={setActiveMode} />
       </header>
+      <ModeSwitcher activeMode={activeMode} setActiveMode={setActiveMode} />
 
       <main className="flex-1 p-6 overflow-y-auto">
         <div className="flex flex-col items-center justify-start space-y-4">
@@ -197,8 +197,8 @@ const Popup = () => {
         </div>
       </main>
 
-      <footer className="bg-[#ED6A5A] border-t border-white/10 shadow-lg mt-auto">
-        <nav className="flex justify-around py-2">
+      <footer className="bg-[#ED6A5A] border-t border-white/10 shadow-lg mt-auto flex justify-center items-center">
+        <nav className="flex justify-around items py-2 w-3/4">
           <TabButton
             id="scan"
             icon={AiOutlineSecurityScan}

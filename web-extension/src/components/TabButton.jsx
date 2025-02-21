@@ -3,14 +3,24 @@ import React from "react";
 const TabButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => (
   <button
     onClick={() => setActiveTab(id)}
-    className={`flex flex-col items-center p-2 ${
+    className={`group flex items-center mx-2 gap-3 px-4 py-2.5 w-full transition-all duration-300 bg-white border rounded text-[#ED6A5A] ${
       activeTab === id
-        ? "text-white bg-[#ED6A5A] rounded-xl"
-        : "text-white/80 hover:text-white bg-[#ed7363] transition-all duration-300"
+        ? " text-black rounded-lg shadow-md border-[#ED6A5A]"
+        : "border-none"
     }`}
   >
-    <Icon className="text-xl mb-1" />
-    <span className="text-xs font-pixelify">{label}</span>
+    <Icon
+      className={`text-lg text-[#ED6A5A] transition-transform duration-300 ${
+        activeTab === id ? "transform scale-110" : "group-hover:scale-110"
+      }`}
+    />
+    <span
+      className={`text-sm text-[#ED6A5A] font-medium tracking-wide transition-all duration-300 ${
+        activeTab === id ? "opacity-100" : "opacity-70 group-hover:opacity-100"
+      }`}
+    >
+      {label}
+    </span>
   </button>
 );
 

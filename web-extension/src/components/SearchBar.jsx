@@ -20,7 +20,7 @@ const SearchBar = ({
             ? "Enter contract to scan..."
             : "Enter contract to report..."
         }
-        className="w-full pl-5 pr-14 py-4 bg-[#8AA6A3] text-white placeholder-white/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#ED6A5A] transition-all shadow-inner"
+        className="w-full pl-5 pr-14 py-4 bg-gray-300 text-black placeholder-black/60 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#ED6A5A] transition-all shadow-inner"
       />
       <button
         type="submit"
