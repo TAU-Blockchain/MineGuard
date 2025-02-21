@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { BiSearch, BiChevronDown } from "react-icons/bi";
+import { HiCode, HiShieldCheck, HiShieldExclamation } from "react-icons/hi";
+import { MdVerified, MdWarning } from "react-icons/md";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
+import { apiService } from "../services/apiService";
+import Badge from "./Badge";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -13,6 +17,7 @@ function Scan() {
   const [reportResult, setReportResult] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleReports, setVisibleReports] = useState(5);
+  const [contractInfo, setContractInfo] = useState(null);
 
   const calculateThreatDistribution = (reports) => {
     const threatCount = {};
@@ -63,6 +68,7 @@ function Scan() {
     e.preventDefault();
     setIsLoading(true);
     setReportResult(null);
+    setContractInfo(null);
 
     try {
       if (!searchQuery || !searchQuery.trim()) {
@@ -72,6 +78,16 @@ function Scan() {
       if (!ethers.isAddress(searchQuery)) {
         throw new Error("Invalid Ethereum address format");
       }
+
+      const [verificationStatus, contractDetails] = await Promise.all([
+        apiService.getContractVerificationStatus(searchQuery),
+        apiService.getContractDetails(searchQuery),
+      ]);
+
+      setContractInfo({
+        ...verificationStatus,
+        contractDetails,
+      });
 
       const reports = await getReports(searchQuery);
 
@@ -125,7 +141,6 @@ function Scan() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
       <section className="bg-[#9BC1BC] shadow-lg shadow-[#9BC1BC] text-white py-20 my-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
@@ -184,22 +199,223 @@ function Scan() {
               ) : (
                 <div className="grid gap-8">
                   {reportResult.reports.length === 0 ? (
-                    <div className="bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A] text-center">
-                      <div className="text-[#ED6A5A] text-lg font-medium">
-                        No reports found for this address. This address appears
-                        to be safe!
+                    <div className="bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A]">
+                      <div className="flex flex-col items-center gap-4">
+                        <h3 className="text-xl text-[#ED6A5A] font-semibold">
+                          Scanned Address
+                        </h3>
+                        <div className="font-mono text-sm break-all text-gray-600">
+                          {reportResult.address}
+                        </div>
+                        {contractInfo && (
+                          <div className="flex flex-wrap gap-2">
+                            {contractInfo.isContract ? (
+                              <Badge
+                                icon={HiCode}
+                                text="Contract"
+                                color="bg-yellow-100 text-yellow-700"
+                                tooltipText="This address contains a smart contract"
+                              />
+                            ) : (
+                              <Badge
+                                icon={HiCode}
+                                text="Not a Contract"
+                                color="bg-gray-100 text-gray-700"
+                                tooltipText="This is a wallet address, not a smart contract"
+                              />
+                            )}
+
+                            {contractInfo.isVerified ? (
+                              <Badge
+                                icon={MdVerified}
+                                text="Verified"
+                                color="bg-green-100 text-green-700"
+                                tooltipText="This contract's source code is verified and trusted"
+                              />
+                            ) : (
+                              <Badge
+                                icon={HiShieldExclamation}
+                                text="Unverified"
+                                color="bg-red-100 text-red-700"
+                                tooltipText="This contract's source code is not verified, be cautious"
+                              />
+                            )}
+
+                            {contractInfo.isScam ? (
+                              <Badge
+                                icon={MdWarning}
+                                text="Scam"
+                                color="bg-red-100 text-red-700"
+                                tooltipText="This contract has been flagged as potentially fraudulent"
+                              />
+                            ) : (
+                              <Badge
+                                icon={HiShieldCheck}
+                                text="Safe"
+                                color="bg-green-100 text-green-700"
+                                tooltipText="This contract has been marked as safe"
+                              />
+                            )}
+
+                            {contractInfo.contractDetails && (
+                              <>
+                                {contractInfo.contractDetails.status
+                                  .isSelfDestructed && (
+                                  <Badge
+                                    icon={MdWarning}
+                                    text="Self Destructed"
+                                    color="bg-red-100 text-red-700"
+                                    tooltipText="This contract has self-destructed and is no longer usable"
+                                  />
+                                )}
+                                {contractInfo.contractDetails.status
+                                  .isProxy && (
+                                  <Badge
+                                    icon={HiCode}
+                                    text="Proxy"
+                                    color="bg-blue-100 text-blue-700"
+                                    tooltipText="This is a proxy contract, it may point to another contract"
+                                  />
+                                )}
+                                {contractInfo.contractDetails.contractType
+                                  .canWrite ? (
+                                  <Badge
+                                    icon={HiCode}
+                                    text="Writable"
+                                    color="bg-yellow-100 text-yellow-700"
+                                    tooltipText="This contract has write permissions, use with caution"
+                                  />
+                                ) : (
+                                  <Badge
+                                    icon={HiCode}
+                                    text="Read Only"
+                                    color="bg-green-100 text-green-700"
+                                    tooltipText="This contract has read-only permissions, more secure"
+                                  />
+                                )}
+                              </>
+                            )}
+                          </div>
+                        )}
+                        <div className="text-[#ED6A5A] text-lg font-medium mt-4">
+                          No reports found for this address.
+                        </div>
+                        <div className="text-sm text-[#ed6b5aa1]">
+                          Last Scan:{" "}
+                          {new Date(reportResult.timestamp).toLocaleString(
+                            "tr-TR",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            }
+                          )}
+                        </div>
                       </div>
                     </div>
                   ) : (
                     <>
-                      {/* Combined Address and Chart Section */}
                       <div className="bg-white p-8 rounded-lg shadow-lg shadow-[#ED6A5A]">
                         <div className="grid md:grid-cols-2 gap-8">
-                          {/* Left Side - Address Info */}
                           <div className="flex flex-col justify-start items-start">
-                            <h3 className="text-xl text-[#ED6A5A] font-semibold mb-4">
-                              Scanned Address
-                            </h3>
+                            <div className="flex items-center gap-3 mb-4">
+                              <h3 className="text-xl text-[#ED6A5A] font-semibold">
+                                Scanned Address
+                              </h3>
+                              {contractInfo && (
+                                <div className="flex flex-wrap gap-2">
+                                  {contractInfo.isContract ? (
+                                    <Badge
+                                      icon={HiCode}
+                                      text="Contract"
+                                      color="bg-yellow-100 text-yellow-700"
+                                      tooltipText="This address contains a smart contract"
+                                    />
+                                  ) : (
+                                    <Badge
+                                      icon={HiCode}
+                                      text="Not a Contract"
+                                      color="bg-gray-100 text-gray-700"
+                                      tooltipText="This is a wallet address, not a smart contract"
+                                    />
+                                  )}
+
+                                  {contractInfo.isVerified ? (
+                                    <Badge
+                                      icon={MdVerified}
+                                      text="Verified"
+                                      color="bg-green-100 text-green-700"
+                                      tooltipText="This contract's source code is verified and trusted"
+                                    />
+                                  ) : (
+                                    <Badge
+                                      icon={HiShieldExclamation}
+                                      text="Unverified"
+                                      color="bg-red-100 text-red-700"
+                                      tooltipText="This contract's source code is not verified, be cautious"
+                                    />
+                                  )}
+
+                                  {contractInfo.isScam ? (
+                                    <Badge
+                                      icon={MdWarning}
+                                      text="Scam"
+                                      color="bg-red-100 text-red-700"
+                                      tooltipText="This contract has been flagged as potentially fraudulent"
+                                    />
+                                  ) : (
+                                    <Badge
+                                      icon={HiShieldCheck}
+                                      text="Safe"
+                                      color="bg-green-100 text-green-700"
+                                      tooltipText="This contract has been marked as safe"
+                                    />
+                                  )}
+
+                                  {contractInfo.contractDetails && (
+                                    <>
+                                      {contractInfo.contractDetails.status
+                                        .isSelfDestructed && (
+                                        <Badge
+                                          icon={MdWarning}
+                                          text="Self Destructed"
+                                          color="bg-red-100 text-red-700"
+                                          tooltipText="This contract has self-destructed and is no longer usable"
+                                        />
+                                      )}
+                                      {contractInfo.contractDetails.status
+                                        .isProxy && (
+                                        <Badge
+                                          icon={HiCode}
+                                          text="Proxy"
+                                          color="bg-blue-100 text-blue-700"
+                                          tooltipText="This is a proxy contract, it may point to another contract"
+                                        />
+                                      )}
+                                      {contractInfo.contractDetails.contractType
+                                        .canWrite ? (
+                                        <Badge
+                                          icon={HiCode}
+                                          text="Writable"
+                                          color="bg-yellow-100 text-yellow-700"
+                                          tooltipText="This contract has write permissions, use with caution"
+                                        />
+                                      ) : (
+                                        <Badge
+                                          icon={HiCode}
+                                          text="Read Only"
+                                          color="bg-green-100 text-green-700"
+                                          tooltipText="This contract has read-only permissions, more secure"
+                                        />
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                             <div className="font-mono text-sm break-all text-gray-600 mb-4">
                               {reportResult.address}
                             </div>
@@ -207,7 +423,7 @@ function Scan() {
                               <div className="mb-2">
                                 Total Reports: {reportResult.reports.length}
                               </div>
-                              <div>
+                              <div className="mt-2">
                                 Last Scan:{" "}
                                 {new Date(
                                   reportResult.timestamp
@@ -223,7 +439,6 @@ function Scan() {
                             </div>
                           </div>
 
-                          {/* Right Side - Chart */}
                           <div className="flex flex-col items-center">
                             <h3 className="text-xl text-[#ED6A5A] font-semibold mb-6">
                               Threat Distribution
@@ -324,7 +539,7 @@ function Scan() {
                                 <div className="text-sm text-[#ed6b5aa1]">
                                   <div>Reporter: {report.reporter}</div>
                                   <div>
-                                    Scan Time:{" "}
+                                    Report Time:{" "}
                                     {new Date(report.timestamp).toLocaleString(
                                       "tr-TR",
                                       {
@@ -351,9 +566,9 @@ function Scan() {
                             className="flex items-center gap-2 bg-white text-[#ED6A5A] px-6 py-3 rounded-full hover:bg-[#ED6A5A] hover:text-white border border-[#ED6A5A] transition duration-300"
                           >
                             <BiChevronDown className="text-xl" />
-                            Daha Fazla Göster (
-                            {reportResult.reports.length - visibleReports} rapor
-                            kaldı)
+                            Show More (
+                            {reportResult.reports.length - visibleReports}{" "}
+                            reports remaining)
                           </button>
                         </div>
                       )}
