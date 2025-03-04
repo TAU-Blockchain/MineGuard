@@ -497,7 +497,7 @@ function Scan() {
                                   <div>
                                     Report Time:{" "}
                                     {new Date(report.timestamp).toLocaleString(
-                                      "tr-TR",
+                                      "en-US",
                                       {
                                         year: "numeric",
                                         month: "long",
